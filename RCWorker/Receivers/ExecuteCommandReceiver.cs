@@ -5,6 +5,11 @@
 	using System;
 	using System.Threading.Tasks;
 	using Newtonsoft.Json;
+	using Amazon.SimpleSystemsManagement;
+	using Amazon.SimpleSystemsManagement.Model;
+	using System.Collections.Generic;
+	using Amazon.Runtime;
+	using Amazon;
 
 	public class ExecuteCommandReceiver : IMessageReceiver
 	{
@@ -16,9 +21,14 @@
 
 		private readonly IConfigurationSettings _configurationSettings;
 
+		private readonly Lazy<AmazonSimpleSystemsManagementClient> _client;
+
 		public ExecuteCommandReceiver(IConfigurationSettings configurationSettings)
 		{
 			_configurationSettings = configurationSettings;
+
+			_client = new Lazy<AmazonSimpleSystemsManagementClient>(() => new AmazonSimpleSystemsManagementClient(
+				new StoredProfileAWSCredentials(_configurationSettings.AWSProfileName), _configurationSettings.AWSRegion));
 		}
 
 		public void Receive()
@@ -31,11 +41,20 @@
 			   });
 		}
 
-		private static void ProcessMessage(string message)
+		private void ProcessMessage(string message)
 		{
-			var command = JsonConvert.DeserializeObject<Command>(message);
+			var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
 
-			log.InfoFormat($"ExecuteCommandReceiver: Received Message: {command.ToString()}");
+			log.InfoFormat($"Sending command: {runCommand.SSMDocument}");
+
+			var commandRequest = new SendCommandRequest(runCommand.SSMDocument, new List<string> { runCommand.InstanceId });
+
+			foreach (var @param in runCommand.SSMDocumentParameters)
+			{
+				commandRequest.Parameters.Add(@param.Key, @param.Value);
+			}
+
+			var response = _client.Value.SendCommand(commandRequest);
 		}
 
 		public void Dispose()
@@ -47,7 +66,7 @@
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposed)
-			{ 
+			{
 				return;
 			}
 

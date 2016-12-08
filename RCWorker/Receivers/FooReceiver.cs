@@ -33,7 +33,7 @@
 
 		private static void ProcessMessage(string message)
 		{
-			var command = JsonConvert.DeserializeObject<Command>(message);
+			var command = JsonConvert.DeserializeObject<RunCommand>(message);
 
 			log.InfoFormat($"FooReceiver: Received Message: {command.ToString()}");
 		}

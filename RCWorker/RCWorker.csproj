@@ -33,6 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.Core.3.3.5.1\lib\net45\AWSSDK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.SimpleSystemsManagement, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.SimpleSystemsManagement.3.3.1.1\lib\net45\AWSSDK.SimpleSystemsManagement.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="JMFamily.Messaging">
       <HintPath>..\..\libs\JMFamily.Messaging.dll</HintPath>
     </Reference>
@@ -67,7 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ConfigurationSettings.cs" />
-    <Compile Include="Model\Command.cs" />
+    <Compile Include="Model\RunCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="RCServiceInstaller.cs">
       <SubType>Component</SubType>
@@ -90,8 +98,12 @@
     <Compile Include="Util\Exceptions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="RCServiceInstaller.resx">
@@ -100,6 +112,9 @@
     <EmbeddedResource Include="RCService.resx">
       <DependentUpon>RCService.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\AWSSDK.SimpleSystemsManagement.3.3.1.1\analyzers\dotnet\cs\AWSSDK.SimpleSystemsManagement.CodeAnalysis.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
