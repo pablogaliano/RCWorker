@@ -91,7 +91,7 @@
       <DependentUpon>RCService.cs</DependentUpon>
     </Compile>
     <Compile Include="RCWorkerRegistry.cs" />
-    <Compile Include="Receivers\FooReceiver.cs" />
+    <None Include="Receivers\FooReceiver.cs" />
     <Compile Include="Receivers\ExecuteCommandReceiver.cs" />
     <Compile Include="Receivers\IMessageReceiver.cs" />
     <Compile Include="Util\DependencyResolver.cs" />

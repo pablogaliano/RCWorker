@@ -1,15 +1,14 @@
 ﻿namespace JMFamily.Automation.RCWorker
 {
-	using log4net;
-	using Messaging;
-	using System;
-	using System.Threading.Tasks;
-	using Newtonsoft.Json;
+	using Amazon.Runtime;
 	using Amazon.SimpleSystemsManagement;
 	using Amazon.SimpleSystemsManagement.Model;
+	using log4net;
+	using Messaging;
+	using Newtonsoft.Json;
+	using System;
 	using System.Collections.Generic;
-	using Amazon.Runtime;
-	using Amazon;
+	using System.Threading.Tasks;
 
 	public class ExecuteCommandReceiver : IMessageReceiver
 	{
@@ -45,7 +44,7 @@
 		{
 			var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
 
-			log.InfoFormat($"Sending command: {runCommand.SSMDocument}");
+			log.InfoFormat($"Sending command for execution: {Environment.NewLine}{runCommand.ToString()}");
 
 			var commandRequest = new SendCommandRequest(runCommand.SSMDocument, new List<string> { runCommand.InstanceId });
 
@@ -55,6 +54,13 @@
 			}
 
 			var response = _client.Value.SendCommand(commandRequest);
+
+			log.InfoFormat($"Command sent for execution: {Environment.NewLine}CommandId: {response.Command.CommandId}");
+
+			if (_configurationSettings.WaitForCommandExecution)
+			{
+				WaitForCommandExecution(runCommand.InstanceId, response.Command.CommandId);
+			}
 		}
 
 		public void Dispose()
@@ -83,6 +89,29 @@
 				}
 
 				disposed = true;
+			}
+		}
+
+		private void WaitForCommandExecution(string instanceId, string commandId)
+		{
+			while (true)
+			{
+				var response = _client.Value.GetCommandInvocation(
+					new GetCommandInvocationRequest { InstanceId = instanceId, CommandId = commandId });
+
+				if (response.Status == CommandInvocationStatus.Pending ||
+					response.Status == CommandInvocationStatus.InProgress)
+				{
+					Task.Delay(1000).Wait();
+				}
+				else
+				{
+					log.InfoFormat($"Command response code: {response.ResponseCode}");
+					log.InfoFormat($"Command status: {response.StatusDetails}");
+					log.InfoFormat($"Command output: {response.StandardOutputContent}");
+
+					return;
+				}
 			}
 		}
 	}
