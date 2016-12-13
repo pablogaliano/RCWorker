@@ -42,24 +42,31 @@
 
 		private void ProcessMessage(string message)
 		{
-			var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
-
-			log.InfoFormat($"Sending command for execution: {Environment.NewLine}{runCommand.ToString()}");
-
-			var commandRequest = new SendCommandRequest(runCommand.SSMDocument, new List<string> { runCommand.InstanceId });
-
-			foreach (var @param in runCommand.SSMDocumentParameters)
+			try
 			{
-				commandRequest.Parameters.Add(@param.Key, @param.Value);
+				var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
+
+				log.InfoFormat($"Sending command for execution: {Environment.NewLine}{runCommand.ToString()}");
+
+				var commandRequest = new SendCommandRequest(runCommand.SSMDocument, new List<string> { runCommand.InstanceId });
+
+				foreach (var @param in runCommand.SSMDocumentParameters)
+				{
+					commandRequest.Parameters.Add(@param.Key, @param.Value);
+				}
+
+				var response = _client.Value.SendCommand(commandRequest);
+
+				log.InfoFormat($"Command sent for execution: {Environment.NewLine}CommandId: {response.Command.CommandId}");
+
+				if (_configurationSettings.WaitForCommandExecution)
+				{
+					WaitForCommandExecution(runCommand.InstanceId, response.Command.CommandId);
+				}
 			}
-
-			var response = _client.Value.SendCommand(commandRequest);
-
-			log.InfoFormat($"Command sent for execution: {Environment.NewLine}CommandId: {response.Command.CommandId}");
-
-			if (_configurationSettings.WaitForCommandExecution)
+			catch (Exception ex)
 			{
-				WaitForCommandExecution(runCommand.InstanceId, response.Command.CommandId);
+				log.InfoFormat($"Exception occurred: {ex.ToString()}");
 			}
 		}
 
