@@ -46,7 +46,7 @@
 			{
 				var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
 
-				log.InfoFormat($"Sending command for execution: {Environment.NewLine}{runCommand.ToString()}");
+				log.Info($"Sending command for execution: {Environment.NewLine}{runCommand.ToString()}");
 
 				var commandRequest = new SendCommandRequest(runCommand.SSMDocument, new List<string> { runCommand.InstanceId });
 
@@ -57,7 +57,7 @@
 
 				var response = _client.Value.SendCommand(commandRequest);
 
-				log.InfoFormat($"Command sent for execution: {Environment.NewLine}CommandId: {response.Command.CommandId}");
+				log.Info($"Command sent for execution: {Environment.NewLine}CommandId: {response.Command.CommandId}");
 
 				if (_configurationSettings.WaitForCommandExecution)
 				{
@@ -66,7 +66,7 @@
 			}
 			catch (Exception ex)
 			{
-				log.InfoFormat($"Exception occurred: {ex.ToString()}");
+				log.Error($"Exception occurred: {ex.ToString()}");
 			}
 		}
 
@@ -113,11 +113,11 @@
 				}
 				else
 				{
-					log.InfoFormat($"Command response code: {response.ResponseCode}");
-					log.InfoFormat($"Command start time: {response.ExecutionStartDateTime}");
-					log.InfoFormat($"Command finish time: {response.ExecutionEndDateTime}");
-					log.InfoFormat($"Command status: {response.StatusDetails}");
-					log.InfoFormat($"Command output: {response.StandardOutputContent}");
+					log.Info($"Command response code: {response.ResponseCode}");
+					log.Info($"Command start time: {response.ExecutionStartDateTime}");
+					log.Info($"Command finish time: {response.ExecutionEndDateTime}");
+					log.Info($"Command status: {response.StatusDetails}");
+					log.Info($"Command output: {response.StandardOutputContent}");
 
 					return;
 				}
