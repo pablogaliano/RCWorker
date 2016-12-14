@@ -114,6 +114,8 @@
 				else
 				{
 					log.InfoFormat($"Command response code: {response.ResponseCode}");
+					log.InfoFormat($"Command start time: {response.ExecutionStartDateTime}");
+					log.InfoFormat($"Command finish time: {response.ExecutionEndDateTime}");
 					log.InfoFormat($"Command status: {response.StatusDetails}");
 					log.InfoFormat($"Command output: {response.StandardOutputContent}");
 
