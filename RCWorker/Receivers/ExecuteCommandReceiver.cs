@@ -1,6 +1,5 @@
 ﻿namespace JMFamily.Automation.RCWorker
 {
-	using Amazon.Runtime;
 	using Amazon.SimpleSystemsManagement;
 	using Amazon.SimpleSystemsManagement.Model;
 	using log4net;
@@ -19,15 +18,14 @@
 		private IDisposable _receiver;
 
 		private readonly IConfigurationSettings _configurationSettings;
+		private readonly IRunCommandValidator _runCommandValidator;
+		private readonly IAmazonSimpleSystemsManagement _awsManagement;
 
-		private readonly Lazy<AmazonSimpleSystemsManagementClient> _client;
-
-		public ExecuteCommandReceiver(IConfigurationSettings configurationSettings)
+		public ExecuteCommandReceiver(IConfigurationSettings configurationSettings, IAmazonSimpleSystemsManagement awsManagement, IRunCommandValidator runCommandValidator)
 		{
 			_configurationSettings = configurationSettings;
-
-			_client = new Lazy<AmazonSimpleSystemsManagementClient>(() => new AmazonSimpleSystemsManagementClient(
-				new StoredProfileAWSCredentials(_configurationSettings.AWSProfileName), _configurationSettings.AWSRegion));
+			_awsManagement = awsManagement;
+			_runCommandValidator = runCommandValidator;
 		}
 
 		public void Receive()
@@ -46,27 +44,34 @@
 			{
 				var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
 
+				if (!_runCommandValidator.Validate(runCommand))
+				{
+					return;
+				}
+
 				log.Info($"Sending command for execution: {Environment.NewLine}{runCommand.ToString()}");
 
-				var commandRequest = new SendCommandRequest(runCommand.SSMDocument, new List<string> { runCommand.InstanceId });
+				var commandRequest = new SendCommandRequest(runCommand.SSMDocument, runCommand.InstanceIds);
 
 				foreach (var @param in runCommand.SSMDocumentParameters)
 				{
 					commandRequest.Parameters.Add(@param.Key, @param.Value);
 				}
 
-				var response = _client.Value.SendCommand(commandRequest);
+				var response = _awsManagement.SendCommand(commandRequest);
 
 				log.Info($"Command sent for execution: {Environment.NewLine}CommandId: {response.Command.CommandId}");
 
 				if (_configurationSettings.WaitForCommandExecution)
 				{
-					WaitForCommandExecution(runCommand.InstanceId, response.Command.CommandId);
+					WaitForCommandExecution(runCommand.InstanceIds, response.Command.CommandId);
 				}
 			}
 			catch (Exception ex)
 			{
 				log.Error($"Exception occurred: {ex.ToString()}");
+
+				throw;
 			}
 		}
 
@@ -99,27 +104,31 @@
 			}
 		}
 
-		private void WaitForCommandExecution(string instanceId, string commandId)
+		private void WaitForCommandExecution(List<string> instanceIds, string commandId)
 		{
-			while (true)
+			foreach (var instanceId in instanceIds)
 			{
-				var response = _client.Value.GetCommandInvocation(
-					new GetCommandInvocationRequest { InstanceId = instanceId, CommandId = commandId });
-
-				if (response.Status == CommandInvocationStatus.Pending ||
-					response.Status == CommandInvocationStatus.InProgress)
+				while (true)
 				{
-					Task.Delay(1000).Wait();
-				}
-				else
-				{
-					log.Info($"Command response code: {response.ResponseCode}");
-					log.Info($"Command start time: {response.ExecutionStartDateTime}");
-					log.Info($"Command finish time: {response.ExecutionEndDateTime}");
-					log.Info($"Command status: {response.StatusDetails}");
-					log.Info($"Command output: {response.StandardOutputContent}");
+					var response = _awsManagement.GetCommandInvocation(
+						new GetCommandInvocationRequest { InstanceId = instanceId, CommandId = commandId });
 
-					return;
+					if (response.Status == CommandInvocationStatus.Pending ||
+						response.Status == CommandInvocationStatus.InProgress)
+					{
+						Task.Delay(1000).Wait();
+					}
+					else
+					{
+						log.Info($"Target instance id: {instanceId}");
+						log.Info($"Command response code: {response.ResponseCode}");
+						log.Info($"Command start time: {response.ExecutionStartDateTime}");
+						log.Info($"Command finish time: {response.ExecutionEndDateTime}");
+						log.Info($"Command status: {response.StatusDetails}");
+						log.Info($"Command output: {response.StandardOutputContent}");
+
+						break;
+					}
 				}
 			}
 		}

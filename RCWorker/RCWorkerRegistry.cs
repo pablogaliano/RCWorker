@@ -1,5 +1,7 @@
 ﻿namespace JMFamily.Automation.RCWorker
 {
+	using Amazon.Runtime;
+	using Amazon.SimpleSystemsManagement;
 	using StructureMap;
 
 	public class RCWorkerRegistry : Registry
@@ -14,6 +16,17 @@
 			});
 
 			For<IConfigurationSettings>().Use("Setup", ctx => new ConfigurationSettings());
+
+			For<IAmazonSimpleSystemsManagement>().Use("Setup", ctx =>
+				{
+					var configurationSettings = ctx.GetInstance<IConfigurationSettings>();
+					var awsManagement = new AmazonSimpleSystemsManagementClient(
+						 new StoredProfileAWSCredentials(configurationSettings.AWSProfileName), configurationSettings.AWSRegion) as IAmazonSimpleSystemsManagement;
+
+					return awsManagement;
+				});
+
+			For<IRunCommandValidator>().Use("Setup", ctx => new RunCommandValidator(ctx.GetInstance<IAmazonSimpleSystemsManagement>()));
 		}
 	}
 }

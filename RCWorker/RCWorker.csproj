@@ -34,11 +34,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.Core.3.3.5.1\lib\net45\AWSSDK.Core.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.Core.3.3.6.1\lib\net45\AWSSDK.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="AWSSDK.SimpleSystemsManagement, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\packages\AWSSDK.SimpleSystemsManagement.3.3.1.1\lib\net45\AWSSDK.SimpleSystemsManagement.dll</HintPath>
+      <HintPath>..\packages\AWSSDK.SimpleSystemsManagement.3.3.1.2\lib\net45\AWSSDK.SimpleSystemsManagement.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="JMFamily.Messaging">
@@ -75,7 +75,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ConfigurationSettings.cs" />
+    <Compile Include="Model\IRunCommandValidator.cs" />
     <Compile Include="Model\RunCommand.cs" />
+    <Compile Include="Model\RunCommandValidator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="RCServiceInstaller.cs">
       <SubType>Component</SubType>
@@ -114,7 +116,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\AWSSDK.SimpleSystemsManagement.3.3.1.1\analyzers\dotnet\cs\AWSSDK.SimpleSystemsManagement.CodeAnalysis.dll" />
+    <Analyzer Include="..\packages\AWSSDK.SimpleSystemsManagement.3.3.1.2\analyzers\dotnet\cs\AWSSDK.SimpleSystemsManagement.CodeAnalysis.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
