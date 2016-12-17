@@ -14,15 +14,16 @@
 		private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private bool disposed = false;
-		private IQueueServer _server;
 		private IDisposable _receiver;
 
+		private readonly IQueueServer _queueServer;
 		private readonly IConfigurationSettings _configurationSettings;
 		private readonly IRunCommandValidator _runCommandValidator;
 		private readonly IAmazonSimpleSystemsManagement _awsManagement;
 
-		public ExecuteCommandReceiver(IConfigurationSettings configurationSettings, IAmazonSimpleSystemsManagement awsManagement, IRunCommandValidator runCommandValidator)
+		public ExecuteCommandReceiver(IQueueServer queueServer, IConfigurationSettings configurationSettings, IAmazonSimpleSystemsManagement awsManagement, IRunCommandValidator runCommandValidator)
 		{
+			_queueServer = queueServer;
 			_configurationSettings = configurationSettings;
 			_awsManagement = awsManagement;
 			_runCommandValidator = runCommandValidator;
@@ -30,15 +31,13 @@
 
 		public void Receive()
 		{
-			_server = QueueFactory.GetQueueServer(_configurationSettings.HostName);
-
-			_receiver = _server.ReceiveAsync<string>("runcommand_queue", "runcommand_exchange", new string[] { "runcommand.jmfamily.com" }, (e) =>
+			_receiver = _queueServer.ReceiveAsync<string>("runcommand_queue", "runcommand_exchange", new string[] { "runcommand.jmfamily.com" }, (e) =>
 			   {
 				   return Task.Run(() => ProcessMessage(e.Message));
 			   });
 		}
 
-		private void ProcessMessage(string message)
+		internal void ProcessMessage(string message)
 		{
 			try
 			{
@@ -90,11 +89,6 @@
 
 			if (disposing)
 			{
-				if (_server != null)
-				{
-					_server.Dispose();
-				}
-
 				if (_receiver != null)
 				{
 					_receiver.Dispose();

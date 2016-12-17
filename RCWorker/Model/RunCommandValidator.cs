@@ -22,19 +22,26 @@
 
 		public bool Validate(RunCommand runCommand)
 		{
-			return 
+			return
 				ValidateSSMDocument(runCommand) &&
 				ValidateTargetPlatform(runCommand) &&
 				ValidateInstances(runCommand);
 		}
 
-		private bool ValidateSSMDocument(RunCommand command)
+		internal bool ValidateSSMDocument(RunCommand command)
 		{
 			var isValid = false;
 
 			try
 			{
 				log.Info($"Validating SSM document");
+
+				if (string.IsNullOrEmpty(command.SSMDocument))
+				{
+					log.Error("SSMDocument is empty");
+
+					return false;
+				}
 
 				var response = _awsManagement.GetDocument(command.SSMDocument);
 
@@ -53,7 +60,7 @@
 			return isValid;
 		}
 
-		private bool ValidateTargetPlatform(RunCommand command)
+		internal bool ValidateTargetPlatform(RunCommand command)
 		{
 			var isValid = false;
 			var documentPlatform = string.Empty;
@@ -61,6 +68,13 @@
 			try
 			{
 				log.Info($"Validating command target platform");
+
+				if (string.IsNullOrEmpty(command.TargetPlatform))
+				{
+					log.Error("TargetPlatform is empty");
+
+					return false;
+				}
 
 				var response = _awsManagement.DescribeDocument(new DescribeDocumentRequest(command.SSMDocument));
 
@@ -87,7 +101,7 @@
 			return isValid;
 		}
 
-		private bool ValidateInstances(RunCommand command)
+		internal bool ValidateInstances(RunCommand command)
 		{
 			var isValid = true;
 			var invalidInstances = new List<Tuple<string, string>>();
@@ -95,6 +109,13 @@
 			try
 			{
 				log.Info($"Validating target instances");
+
+				if (!command.InstanceIds.Any())
+				{
+					log.Error("InstanceIds are empty");
+
+					return false;
+				}
 
 				var response = _awsManagement.DescribeInstanceInformation(
 					new DescribeInstanceInformationRequest

@@ -2,6 +2,7 @@
 {
 	using Amazon.Runtime;
 	using Amazon.SimpleSystemsManagement;
+	using Messaging;
 	using StructureMap;
 
 	public class RCWorkerRegistry : Registry
@@ -27,6 +28,9 @@
 				});
 
 			For<IRunCommandValidator>().Use("Setup", ctx => new RunCommandValidator(ctx.GetInstance<IAmazonSimpleSystemsManagement>()));
+
+			For<IQueueServer>().Use("Setup", ctx => QueueFactory.GetQueueServer(ctx.GetInstance<IConfigurationSettings>().HostName));
+
 		}
 	}
 }
