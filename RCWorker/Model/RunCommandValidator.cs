@@ -76,7 +76,7 @@
 					return false;
 				}
 
-				var response = _awsManagement.DescribeDocument(new DescribeDocumentRequest(command.SSMDocument));
+				var response = _awsManagement.DescribeDocument(command.SSMDocument);
 
 				isValid = response.Document.PlatformTypes.Contains(command.TargetPlatform, StringComparer.OrdinalIgnoreCase);
 
