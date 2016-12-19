@@ -90,7 +90,7 @@
 
 		public object GetService(Type serviceType)
 		{
-			Exceptions.ThrowIfNull(serviceType, "serviceType");
+			Exceptions.ThrowIfNull(serviceType, nameof(serviceType));
 
 			IContainer container = _container;
 
@@ -122,8 +122,8 @@
 
 		public object GetService(Type serviceType, ExplicitArguments explicitArguments)
 		{
-			Exceptions.ThrowIfNull(serviceType, "serviceType");
-			Exceptions.ThrowIfNull(explicitArguments, "explicitArguments");
+			Exceptions.ThrowIfNull(serviceType, nameof(serviceType));
+			Exceptions.ThrowIfNull(explicitArguments, nameof(explicitArguments));
 
 			IContainer container = _container;
 
@@ -151,8 +151,8 @@
 
 		public object GetService(Type serviceType, string serviceName)
 		{
-			Exceptions.ThrowIfNull(serviceType, "serviceType");
-			Exceptions.ThrowIfNullOrEmpty(serviceName, "serviceName");
+			Exceptions.ThrowIfNull(serviceType, nameof(serviceType));
+			Exceptions.ThrowIfNullOrEmpty(serviceName, nameof(serviceName));
 
 			IContainer container = _container;
 
@@ -184,9 +184,9 @@
 
 		public object GetService(Type serviceType, string serviceName, ExplicitArguments explicitArguments)
 		{
-			Exceptions.ThrowIfNull(serviceType, "serviceType");
-			Exceptions.ThrowIfNullOrEmpty(serviceName, "serviceName");
-			Exceptions.ThrowIfNull(explicitArguments, "explicitArguments");
+			Exceptions.ThrowIfNull(serviceType, nameof(serviceType));
+			Exceptions.ThrowIfNullOrEmpty(serviceName, nameof(serviceName));
+			Exceptions.ThrowIfNull(explicitArguments, nameof(explicitArguments));
 
 			IContainer container = _container;
 

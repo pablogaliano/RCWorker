@@ -41,6 +41,8 @@
 		{
 			try
 			{
+				Exceptions.ThrowIfNullOrEmpty(message, nameof(message));
+
 				var runCommand = JsonConvert.DeserializeObject<RunCommand>(message);
 
 				if (!_runCommandValidator.Validate(runCommand))
