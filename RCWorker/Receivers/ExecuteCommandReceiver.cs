@@ -65,6 +65,9 @@
 
 				if (_configurationSettings.WaitForCommandExecution)
 				{
+					//Spin 500 msec to wait for AWS 
+					Task.Delay(500).Wait();
+
 					WaitForCommandExecution(runCommand.InstanceIds, response.Command.CommandId);
 				}
 			}
@@ -106,24 +109,33 @@
 			{
 				while (true)
 				{
-					var response = _awsManagement.GetCommandInvocation(
+					try
+					{
+						var response = _awsManagement.GetCommandInvocation(
 						new GetCommandInvocationRequest { InstanceId = instanceId, CommandId = commandId });
 
-					if (response.Status == CommandInvocationStatus.Pending ||
-						response.Status == CommandInvocationStatus.InProgress)
-					{
-						Task.Delay(1000).Wait();
-					}
-					else
-					{
-						log.Info($"Target instance id: {instanceId}");
-						log.Info($"Command response code: {response.ResponseCode}");
-						log.Info($"Command start time: {response.ExecutionStartDateTime}");
-						log.Info($"Command finish time: {response.ExecutionEndDateTime}");
-						log.Info($"Command status: {response.StatusDetails}");
-						log.Info($"Command output: {response.StandardOutputContent}");
+						if (response.Status == CommandInvocationStatus.Pending ||
+							response.Status == CommandInvocationStatus.InProgress)
+						{
+							log.Info($"Waiting for command '{commandId}' execution on instance '{instanceId}'");
 
-						break;
+							Task.Delay(1000).Wait();
+						}
+						else
+						{
+							log.Info($"Target instance id: {instanceId}");
+							log.Info($"Command response code: {response.ResponseCode}");
+							log.Info($"Command start time: {response.ExecutionStartDateTime}");
+							log.Info($"Command finish time: {response.ExecutionEndDateTime}");
+							log.Info($"Command status: {response.StatusDetails}");
+							log.Info($"Command output: {response.StandardOutputContent}");
+
+							break;
+						}
+					}
+					catch(Exception ex)
+					{
+						log.Error($"Exception occurred while waiting for execution: {ex.ToString()}");
 					}
 				}
 			}

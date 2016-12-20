@@ -22,13 +22,13 @@
 					var message = JsonConvert.SerializeObject(
 						new
 						{
-							InstanceId = "i-09da6691",
+							InstanceIds = new List<string> { "i-09da6691", "i-06ccb53bc2b9076cd" },
 							SSMDocument = "AWS-RunPowerShellScript",
-							SSMDocumentParameters = new Dictionary<string, List<string>>() { { "commands", new List<String> { "Write-Host $env:computername" } } }
+							SSMDocumentParameters = new Dictionary<string, List<string>>() { { "commands", new List<String> { "Write-Host 'foo'" } } },
+							TargetPlatform = "Windows"
 						});
 
 					client.Send("runcommand_exchange", message, "runcommand.jmfamily.com");
-					client.Send("runcommand_exchange", message, "foo.jmfamily.com");
 
 					Console.WriteLine($"Message sent: {message}");
 				}
